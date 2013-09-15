@@ -1,10 +1,13 @@
 var _ = require('lodash');
 
-module.exports = function(conf){
-  var connectors = require('require-dir')('./connectors');
-  var result = {};
+module.exports = function(config){
+  if (!config) config = require('../conf');
 
-  // initialize all connectors and return the result
-  _.each(connectors, function(connector){result[connector.name] = connector(conf)});
-  return result;
+  return {
+    dropbox: require('./connectors/dropbox')(config),
+    //facebook: require('./connectors/facebook')(config),
+    //flickr: require('./connectors/flickr')(config),
+    //instagram: require('./connectors/instagram')(config),
+    //twitter: require('./connectors/twitter')(config)
+  };
 };

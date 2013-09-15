@@ -18,7 +18,7 @@ InputConnector.prototype.downloadOriginal = function(user, photo, done){
 };
 
 
-InputConnector.prototype.importNewPhotos = function(user, progress){
+InputConnector.prototype.importNewPhotos = function(user, emit, done){
   throw new Error('Not implemented');
 };
 

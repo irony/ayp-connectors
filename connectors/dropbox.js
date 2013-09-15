@@ -9,6 +9,7 @@ var ObjectId = require('mongoose').Types.ObjectId;
 var stream = require("stream");
 
 function dropbox(config){
+	this.name = dropbox;
 
 	var dropbox   = dbox.app(config.dbox);
 
@@ -115,7 +116,7 @@ function dropbox(config){
 			return client;
 		};
 
-		connector.importNewPhotos = function(user, done)
+		connector.importNewPhotos = function(user, emit, done)
 		{
 
 		  if (!done) throw new Error("Callback is mandatory");
@@ -134,13 +135,8 @@ function dropbox(config){
 	    return User.findById(user._id, function(err, user){
 
 				if (err || !user || !user.accounts || !user.accounts.dropbox) return done('error finding user or this user don\'t have dropbox');
-
-
 				var client = connector.getClient(user);
-				
-
 				if (!user.accounts.dropbox.cursor) console.debug('Importing all photos for user', user._id);
-
 
 				var loadDelta = function(cursor){
 					client.delta({cursor : cursor}, function(status, reply){
@@ -151,12 +147,10 @@ function dropbox(config){
 				    var photos = (reply.entries || []).map(function(photoRow){
 
 							var photo = photoRow[1];
-							if (!photo)
-								return null;
-
+							if (!photo) return null;
 							photo.mimeType = photo && photo.mime_type;
 							photo.taken = photo && photo.client_mtime;
-
+							photo.source = 'dropbox';
 							return photo && photo.mime_type && photo.bytes > 4096 && photo.bytes < 10*1024*1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 				    
 				    }).reduce(function(a,b){
@@ -166,14 +160,9 @@ function dropbox(config){
 
 				    }, []);
 
-						_.forEach(photos, function(photo){
-							photo.source = 'dropbox';
-							// connector.downloadThumbnail(photo, client, user, done);
-						});
-
+						if (emit) emit(photos);
 						if (reply.has_more) {
 
-							console.log('found more');
 							return process.nextTick(function(){
 								return loadDelta(reply.cursor);
 							});
