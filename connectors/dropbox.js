@@ -2,14 +2,15 @@ var dbox  = require("dbox");
 var async  = require("async");
 var passport = require('passport');
 var InputConnector = require('../inputConnector');
-var Photo = require('AllYourPhotosModels').photo;
-var User = require('AllYourPhotosModels').user;
+var models = require('AllYourPhotosModels');
+var Photo = models.photo;
+var User = models.user;
 var _ = require('lodash');
 var ObjectId = require('mongoose').Types.ObjectId;
 var stream = require("stream");
 
-function dropbox(config){
-	this.name = dropbox;
+function dropboxJob(config){
+	this.name = 'dropbox';
 
 	var dropbox   = dbox.app(config.dbox);
 
@@ -128,19 +129,12 @@ function dropbox(config){
 			}
 			var client = this.getClient(user);
 
-
-
-				// console.log('downloading metadata from dropbox for user id', user._id);
-
 	    return User.findById(user._id, function(err, user){
 
 				if (err || !user || !user.accounts || !user.accounts.dropbox) return done('error finding user or this user don\'t have dropbox');
 				var client = connector.getClient(user);
-				if (!user.accounts.dropbox.cursor) console.debug('Importing all photos for user', user._id);
-
 				var loadDelta = function(cursor){
 					client.delta({cursor : cursor}, function(status, reply){
-						
 						if (status !== 200 || !reply)
 							return done && done(status);
 
@@ -186,4 +180,4 @@ function dropbox(config){
 		return connector;
 }
 
-module.exports = dropbox;
+module.exports = dropboxJob;
