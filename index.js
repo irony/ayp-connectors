@@ -1,5 +1,1 @@
-module.exports = {
-  inputConnector : require('./inputConnector'),
-  importer : require('./importer'),
-  connectors : require('require-dir')('./connectors')
-}
+module.exports =  require('require-dir')('./connectors');
