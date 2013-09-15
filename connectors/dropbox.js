@@ -8,7 +8,7 @@ var _ = require('lodash');
 var ObjectId = require('mongoose').Types.ObjectId;
 var stream = require("stream");
 
-function init(config){
+function dropbox(config){
 
 	var dropbox   = dbox.app(config.dbox);
 
@@ -197,4 +197,4 @@ function init(config){
 		return connector;
 }
 
-module.exports = init;
+module.exports = dropbox;
