@@ -5,7 +5,7 @@ module.exports = function(config){
 
   return {
     dropbox: require('./connectors/dropbox')(config),
-    //facebook: require('./connectors/facebook')(config),
+    facebook: require('./connectors/facebook')(config),
     //flickr: require('./connectors/flickr')(config),
     //instagram: require('./connectors/instagram')(config),
     //twitter: require('./connectors/twitter')(config)
