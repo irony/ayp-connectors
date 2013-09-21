@@ -1,7 +1,7 @@
 var _ = require('lodash');
 
 module.exports = function(config){
-  if (!config) config = require('../conf');
+  if (!config) config = require('AllYourPhotosConfig');
 
   return {
     dropbox: require('./connectors/dropbox')(config),

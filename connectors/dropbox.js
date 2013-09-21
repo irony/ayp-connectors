@@ -113,28 +113,37 @@ function dropboxJob(config){
 				"oauth_token"					:  user.accounts.dropbox.token,
 			};
 
+			console.debug('auth token ' + JSON.stringify(access_token));
+
 			var client = dropbox.client(access_token);
 			return client;
 		};
 
-		connector.importNewPhotos = function(user, emit, done)
+		connector.importNewPhotos = function(user, done)
 		{
 
 		  if (!done) throw new Error("Callback is mandatory");
 
 			if (!user || !user._id || user.accounts.dropbox === undefined){
-
 				return done(new Error('Not a valid dropbox user'));
-
 			}
-			var client = this.getClient(user);
 
 	    return User.findById(user._id, function(err, user){
+				console.debug('Finding photos on dropbox');
 
-				if (err || !user || !user.accounts || !user.accounts.dropbox) return done('error finding user or this user don\'t have dropbox');
+				if (err || !user || !user.accounts || !user.accounts.dropbox) return done(new Error('error finding user or this user don\'t have dropbox'));
+				
 				var client = connector.getClient(user);
+
+				if (!client) return done(new Error('No client recieved'));
+				
+				console.debug('Created dropbox client');
+
 				var loadDelta = function(cursor){
-					client.delta({cursor : cursor}, function(status, reply){
+					console.debug('loading delta #' + cursor);
+					client.delta({cursor : cursor || null}, function(status, reply){
+						console.log('Received delta', status);
+
 						if (status !== 200 || !reply)
 							return done && done(status);
 
@@ -154,22 +163,13 @@ function dropboxJob(config){
 
 				    }, []);
 
-						if (emit) emit(photos);
-						if (reply.has_more) {
+						user.accounts.dropbox.cursor = reply.cursor;
+						user.markModified('accounts');
+						
+						return user.save(function(err, user){
+							return done && done(err, photos);
+						});
 
-							return process.nextTick(function(){
-								return loadDelta(reply.cursor);
-							});
-
-						} else {
-							
-							user.accounts.dropbox.cursor = reply.cursor;
-							user.markModified('accounts');
-
-							return user.save(function(err, user){
-								return done && done(err, photos);
-							});
-						}
 					});
 				};
 
