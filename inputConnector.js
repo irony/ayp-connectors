@@ -1,3 +1,7 @@
+var knox = require('knox');
+var config = require('AllYourPhotosConfig');
+var s3 = knox.createClient(config.aws);
+
 function InputConnector(name){
   this.name = name;
 }
@@ -18,7 +22,7 @@ InputConnector.prototype.downloadOriginal = function(user, photo, done){
 };
 
 
-InputConnector.prototype.importNewPhotos = function(user, emit, done){
+InputConnector.prototype.importNewPhotos = function(user, done){
   throw new Error('Not implemented');
 };
 
@@ -51,7 +55,7 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
           'Cache-Control': 'public,max-age=31556926'
       };
 
-  var put = global.s3.putStream(stream, filename, headers, function(err, res){
+  var put = s3.putStream(stream, filename, headers, function(err, res){
     if (err) return done(err);
 
     if (200 === res.statusCode || 307 === res.statusCode) {
@@ -65,16 +69,16 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
       return done(error, photo);
     } else {
       res.on('data', function(chunk){
-        console.log(chunk.toString().red);
+        console.debug(chunk.toString().red);
       });
-      return done(new Error('Error when saving to S3, code: '.red + res.statusCode, null));
+      return done(new Error('Error when saving to S3, code: ' + res.statusCode, null));
     }
   });
 
   put.on('error', function(err){
     error = err;
     console.log(bytes);
-    console.log('unhandled exception while sending to S3: '.red, err.toString(), filename);
+    console.debug('unhandled exception while sending to S3: '.red, err.toString(), filename);
   });
 
   var exifReader = new ImageHeaders();

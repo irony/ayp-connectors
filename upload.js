@@ -101,7 +101,7 @@ connector.downloadOriginal = function(user, photo, done){
   throw new Error('Not implemented');
 };
 
-connector.importNewPhotos = function(user, progress){
+connector.importNewPhotos = function(user, done){
   throw new Error('Not implemented');
 };
 

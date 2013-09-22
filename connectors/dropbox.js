@@ -21,17 +21,12 @@ function dropboxJob(config){
 		connector.downloadThumbnail = function(user, photo, done){
 		
 		  if (!done) throw new Error("Callback is mandatory");
-		  if (!photo.path) throw new Error("Path is not set on photo.");
 
-			if (!user || !user.accounts || !user.accounts.dropbox)
-				return done(null, null); // 'Not a dropbox user'
+			if (!photo) return done(new Error('no photo provided'));
+		  if (!photo.path) done(new Error("Path is not set on photo."));
+			if (!user || !user.accounts || !user.accounts.dropbox) return done(new Error('not a dropbox user')); // 'Not a dropbox user'
+			if (photo.owners.indexOf(user._id.toString()) < 0) return done(new Error('owner not found')); // not this users photo
 
-			if (photo.owners.indexOf(user._id) < 0)
-				return done(null, null); // not this users photo
-
-			if (!photo) {
-				return done(null, null);
-			}
 
 
 			var filename = photo.source + '/' + photo._id;
@@ -51,13 +46,18 @@ function dropboxJob(config){
 						console.log('error thumbnail'.red, photo.path);
 						return done("Error downloading thumbnail");
 					}
+					
+					console.debug('streaming to s3...');
 
 					connector.upload('thumbnail', photo, res, function(err, photo){
-						done(err || error, photo);
+						console.debug('done');
+						return done(err || error, photo);
 					});
 				});
+
+				return req;
 			} catch(err){
-				done(err);
+				return done(err);
 			}
 
 		};
@@ -142,7 +142,6 @@ function dropboxJob(config){
 				var loadDelta = function(cursor){
 					console.debug('loading delta #' + cursor);
 					client.delta({cursor : cursor || null}, function(status, reply){
-						console.log('Received delta', status);
 
 						if (status !== 200 || !reply)
 							return done && done(status);
