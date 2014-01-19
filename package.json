@@ -4,7 +4,6 @@
   "description": "ERROR: No README.md file found!",
   "main": "index.js",
   "scripts": {
-    "preinstall" : "npm link AllYourPhotosModels",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "",
@@ -13,7 +12,7 @@
   "dependencies": {
     "require-dir": "~0.1.0",
     "image-headers": "~0.3.3",
-    "AllYourPhotosModels": "0.0.1",
+    "AllYourPhotosModels": "irony/ayp-models",
     "redis": "~0.8.4",
     "passport-instagram": "~0.1.2",
     "passport-flickr": "~0.1.1",
