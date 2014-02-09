@@ -1,7 +1,7 @@
 var passport = require('passport');
 var InputConnector = require('../inputConnector');
 
-module.exports = function twitter(config) {
+module.exports = function twitter() {
 
   var connector = new InputConnector('twitter');
 

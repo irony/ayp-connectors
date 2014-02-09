@@ -1,7 +1,7 @@
 var passport = require('passport');
 var InputConnector = require('../inputConnector');
 
-module.exports = function facebook(config) {
+module.exports = function facebook() {
 
   var connector = new InputConnector('facebook');
 

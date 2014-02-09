@@ -8,11 +8,12 @@ var User = models.user;
 var _ = require('lodash');
 var ObjectId = require('mongoose').Types.ObjectId;
 var stream = require("stream");
+var nconf = require('nconf');
 
-function dropboxJob(config){
+function dropboxJob(){
 	this.name = 'dropbox';
 
-	var dropbox   = dbox.app(config.dbox);
+	var dropbox   = dbox.app(nconf.get('dbox'));
 
 	var connector = new InputConnector('dropbox');
 

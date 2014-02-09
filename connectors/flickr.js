@@ -1,7 +1,7 @@
 var passport = require('passport');
 var InputConnector = require('../inputConnector');
 
-module.exports = function flickr(config){
+module.exports = function flickr(){
 
   var connector = new InputConnector('flickr');
 

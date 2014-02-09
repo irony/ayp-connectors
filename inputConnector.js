@@ -1,6 +1,6 @@
 var knox = require('knox');
-var config = require('AllYourPhotosConfig');
-var s3 = knox.createClient(config.aws);
+var nconf = require('nconf');
+var s3 = knox.createClient(nconf.get('aws'));
 
 function InputConnector(name){
   this.name = name;
