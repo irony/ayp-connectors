@@ -11,7 +11,7 @@
   "author": "",
   "license": "BSD",
   "peerDependencies" : {
-    "AllYourPhotosModels": "irony/ayp-models",
+    "AllYourPhotosModels": "irony/ayp-models"
   },
   "dependencies": {
     "require-dir": "~0.1.0",
