@@ -10,29 +10,26 @@
   "repository": "",
   "author": "",
   "license": "BSD",
-  "peerDependencies" : {
-    "AllYourPhotosModels": "irony/ayp-models"
-  },
   "dependencies": {
+    "AllYourPhotosModels": "irony/ayp-models",
+    "nconf": "*",
+    "lodash": "*",
+    "mongoose": "*",
+    "redis": "*",
+    "async": "*",
+    "passport": "*",
+    "multiparty": "*",
+    "dbox": "*",
+    "knox": "*",
     "require-dir": "~0.1.0",
     "image-headers": "~0.3.3",
-    "redis": "~0.8.4",
     "passport-instagram": "~0.1.2",
     "passport-flickr": "~0.1.1",
     "passport-facebook": "~1.0.1",
     "passport-twitter": "~1.0.2",
     "passport-dropbox": "~0.1.2",
     "passport-local": "~0.1.6",
-    "lodash": "*",
-    "async": "~0.2.9",
-    "dbox": "git://github.com/plediii/node-dbox.git#master",
-    "passport": "~0.1.17",
-    "mongoose": "~3.6.19",
-    "multiparty": "~2.1.8",
     "batch": "~0.5.0",
-    "oauth": "~0.9.10",
-    "knox": "~0.8.6",
-    "nconf": "~0.6.9",
-    "nconf-redis": "~0.3.1"
+    "oauth": "~0.9.10"
   }
 }
