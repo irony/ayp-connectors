@@ -22,6 +22,7 @@
     "async": "*",
     "passport": "*",
     "multiparty": "*",
+    "exif": "*",
     "dbox": "*",
     "knox": "*",
     "require-dir": "~0.1.0",
