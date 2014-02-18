@@ -27,13 +27,13 @@
     "knox": "*",
     "require-dir": "~0.1.0",
     "image-headers": "~0.3.3",
-    "passport-instagram": "~0.1.2",
-    "passport-flickr": "~0.1.1",
-    "passport-facebook": "~1.0.1",
-    "passport-twitter": "~1.0.2",
-    "passport-dropbox": "~0.1.2",
-    "passport-local": "~0.1.6",
+    "passport-instagram": "*",
+    "passport-flickr": "*",
+    "passport-facebook": "*",
+    "passport-twitter": "*",
+    "passport-dropbox": "*",
+    "passport-local": "*",
     "batch": "~0.5.0",
-    "oauth": "~0.9.10"
+    "oauth": "*"
   }
 }

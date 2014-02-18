@@ -6,9 +6,9 @@ var models = require('AllYourPhotosModels');
 var Photo = models.photo;
 var User = models.user;
 var _ = require('lodash');
+var nconf = require('nconf');
 var ObjectId = require('mongoose').Types.ObjectId;
 var stream = require("stream");
-var nconf = require('nconf');
 
 function dropboxJob(){
 	this.name = 'dropbox';
