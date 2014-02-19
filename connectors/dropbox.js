@@ -141,8 +141,9 @@ function dropboxJob(){
 				console.debug('Created dropbox client');
 
 				var loadDelta = function(cursor){
-					console.debug('loading delta #' + cursor);
+					console.debug('loading delta #' + cursor + ' for user ' + user);
 					client.delta({cursor : cursor || null}, function(status, reply){
+						console.debug('got response status #', status);
 
 						if (status !== 200 || !reply)
 							return done && done(status);
