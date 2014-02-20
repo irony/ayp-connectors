@@ -23,7 +23,7 @@
     "passport": "*",
     "multiparty": "*",
     "exif": "*",
-    "dbox": "*",
+    "dbox": "0.5.5",
     "knox": "*",
     "require-dir": "~0.1.0",
     "image-headers": "~0.3.3",
