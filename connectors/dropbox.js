@@ -143,7 +143,7 @@ function dropboxJob(){
 				var loadDelta = function(cursor){
 					console.debug('loading delta #' + cursor + ' for user ' + user);
 					var request = client.delta({cursor : cursor || null}, function(status, reply){
-						console.debug('got response status #', status);
+						console.debug('got response status #' + status);
 
 						if (status !== 200 || !reply)
 							return done && done(status);
@@ -173,7 +173,6 @@ function dropboxJob(){
 
 					});
 
-					console.debug('request: ', request)
 				};
 
 				return loadDelta(user.accounts.dropbox.cursor);
