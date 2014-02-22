@@ -120,7 +120,7 @@ function dropboxJob(){
 			return client;
 		};
 
-		connector.importNewPhotos = function(user, done)
+		connector.importNewPhotos = function(user, options, done)
 		{
 
 		  if (!done) throw new Error("Callback is mandatory");
@@ -168,6 +168,7 @@ function dropboxJob(){
 						user.markModified('accounts');
 						
 						return user.save(function(err, user){
+							photos.next = reply.cursor;
 							return done && done(err, photos);
 						});
 
@@ -175,7 +176,7 @@ function dropboxJob(){
 
 				};
 
-				return loadDelta(user.accounts.dropbox.cursor);
+				return loadDelta(options.next || user.accounts.dropbox.cursor);
 			});
 
 		};

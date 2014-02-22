@@ -13,7 +13,7 @@ module.exports = function twitter() {
     throw new Error('Not implemented');
   };
 
-  connector.importNewPhotos = function(user, done){
+  connector.importNewPhotos = function(user, options, done){
     throw new Error('Not implemented');
   };
 

@@ -15,7 +15,7 @@ module.exports = function facebook() {
     //throw new Error('Not implemented');
   };
 
-  connector.importNewPhotos = function(user, done){
+  connector.importNewPhotos = function(user, options, done){
     return done();
     //throw new Error('Not implemented');
   };

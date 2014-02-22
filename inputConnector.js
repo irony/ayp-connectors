@@ -22,7 +22,7 @@ InputConnector.prototype.downloadOriginal = function(user, photo, done){
 };
 
 
-InputConnector.prototype.importNewPhotos = function(user, done){
+InputConnector.prototype.importNewPhotos = function(user, options, done){
   throw new Error('Not implemented');
 };
 
