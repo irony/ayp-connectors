@@ -1,6 +1,6 @@
 {
   "name": "AllYourPhotosConnectors",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "ERROR: No README.md file found!",
   "private": true,
   "main": "index.js",
@@ -10,9 +10,9 @@
   "repository": "",
   "author": "",
   "license": "BSD",
-  "peerDependencies" : {
-      "nconf": "*"
-    },
+  "peerDependencies": {
+    "nconf": "*"
+  },
   "dependencies": {
     "AllYourPhotosModels": "irony/ayp-models",
     "nconf": "*",
