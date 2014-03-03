@@ -9,7 +9,7 @@ function InputConnector(name){
 var ImageHeaders = require("image-headers");
 var Photo = require("AllYourPhotosModels").photo;
 
-// Used to request specieal permissions from example facebook
+// Used to request special permissions, right now only facebook
 InputConnector.prototype.scope = {};
 
 InputConnector.prototype.downloadThumbnail = function(user, photo, done){
