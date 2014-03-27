@@ -1,14 +1,8 @@
 var dbox = require('dbox');
-var async = require('async');
-var passport = require('passport');
 var InputConnector = require('../inputConnector');
 var models = require('AllYourPhotosModels');
-var Photo = models.photo;
 var User = models.user;
-var _ = require('lodash');
 var nconf = require('nconf');
-var ObjectId = require('mongoose').Types.ObjectId;
-var stream = require('stream');
 
 function dropboxJob() {
   this.name = 'dropbox';
@@ -21,16 +15,12 @@ function dropboxJob() {
 
   connector.downloadThumbnail = function(user, photo, done) {
 
-    if (!done) throw new Error("Callback is mandatory");
+    if (!done) throw new Error('Callback is mandatory');
 
     if (!photo) return done(new Error('no photo provided'));
-    if (!photo.path) done(new Error("Path is not set on photo."));
+    if (!photo.path) done(new Error('Path is not set on photo.'));
     if (!user || !user.accounts || !user.accounts.dropbox) return done(new Error('not a dropbox user')); // 'Not a dropbox user'
     if (photo.owners.indexOf(user._id.toString()) < 0) return done(new Error('owner not found')); // not this users photo
-
-
-
-    var filename = photo.source + '/' + photo._id;
 
     try {
       var client = this.getClient(user);
@@ -62,12 +52,10 @@ function dropboxJob() {
     } catch (err) {
       return done(err);
     }
-
   };
 
-
   connector.downloadOriginal = function(user, photo, done) {
-    if (!done) throw new Error("Callback is mandatory");
+    if (!done) throw new Error('Callback is mandatory');
 
     if (!user || !user.accounts || !user.accounts.dropbox)
       return done(new Error('Not a dropbox user'), null); // not a dropbox user
@@ -94,17 +82,14 @@ function dropboxJob() {
 
       if (!res || res.statusCode >= 400) {
         console.log('error original'.red, user, photo.path);
-        return done("Error downloading original");
+        return done('Error downloading original');
       }
 
       connector.upload('original', photo, res, function(err, photo) {
         done(err || error, photo);
       });
     });
-
-
   };
-
 
   connector.getClient = function(user) {
 
@@ -125,7 +110,6 @@ function dropboxJob() {
   connector.importNewPhotos = function(user, options, done) {
 
     if (!done) throw new Error('Callback is mandatory');
-
     if (!user || !user._id || user.accounts.dropbox === undefined) {
       return done(new Error('Not a valid dropbox user'));
     }
@@ -134,9 +118,7 @@ function dropboxJob() {
       console.debug('Finding photos on dropbox');
 
       if (err || !user ||  !user.accounts || !user.accounts.dropbox) return done(new Error('error finding user or this user don\'t have dropbox'));
-
       var client = connector.getClient(user);
-
       if (!client) return done(new Error('No client recieved'));
 
       console.debug('Created dropbox client');
@@ -148,8 +130,17 @@ function dropboxJob() {
         }, function(status, reply) {
           console.debug('got response status #' + status);
 
-          if (status !== 200 || !reply)
+          if (status !== 200 || !reply) {
+            // hit request limit, try again
+            if (status === 503){
+              console.debug('error 503, waiting...', reply.headers);
+              var retryAfter = reply.headers['Retry-After'] * 1000;
+              return setTimeout(function(){
+                connector.importNewPhotos(user, options, done);
+              }, retryAfter);
+            }
             return done && done(status);
+          }
 
           var photos = (reply.entries ||  []).map(function(photoRow) {
 
@@ -160,14 +151,7 @@ function dropboxJob() {
             photo.source = 'dropbox';
             return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 
-          }).reduce(function(a, b) {
-
-            if (b) {
-              a.push(b);
-            } // remove empty rows
-            return a;
-
-          }, []);
+          }).filter(function(a) { return a; });
 
           user.accounts.dropbox.cursor = reply.cursor;
           user.markModified('accounts');
