@@ -1,5 +1,5 @@
-var dbox  = require("dbox");
-var async  = require("async");
+var dbox = require('dbox');
+var async = require('async');
 var passport = require('passport');
 var InputConnector = require('../inputConnector');
 var models = require('AllYourPhotosModels');
@@ -8,179 +8,184 @@ var User = models.user;
 var _ = require('lodash');
 var nconf = require('nconf');
 var ObjectId = require('mongoose').Types.ObjectId;
-var stream = require("stream");
+var stream = require('stream');
 
-function dropboxJob(){
-	this.name = 'dropbox';
+function dropboxJob() {
+  this.name = 'dropbox';
 
-	var dropbox   = dbox.app(nconf.get('dbox'));
+  var dropbox = dbox.app(nconf.get('dbox'));
 
-	var connector = new InputConnector('dropbox');
+  var connector = new InputConnector('dropbox');
 
-		connector.scope = '';
+  connector.scope = '';
 
-		connector.downloadThumbnail = function(user, photo, done){
-		
-		  if (!done) throw new Error("Callback is mandatory");
+  connector.downloadThumbnail = function(user, photo, done) {
 
-			if (!photo) return done(new Error('no photo provided'));
-		  if (!photo.path) done(new Error("Path is not set on photo."));
-			if (!user || !user.accounts || !user.accounts.dropbox) return done(new Error('not a dropbox user')); // 'Not a dropbox user'
-			if (photo.owners.indexOf(user._id.toString()) < 0) return done(new Error('owner not found')); // not this users photo
+    if (!done) throw new Error("Callback is mandatory");
 
-
-
-			var filename = photo.source + '/' + photo._id;
-
-			try {
-				var client = this.getClient(user);
-				var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
-
-				var error;
-				req.on('error', function(err){
-					error = err;
-				});
-
-				req.on('response', function(res){
-					if(!res || res.statusCode >= 400){
-						console.log('owners', photo.owners);
-						console.log('error thumbnail'.red, photo.path);
-						return done("Error downloading thumbnail");
-					}
-					
-					console.debug('streaming to s3...');
-
-					connector.upload('thumbnail', photo, res, function(err, photo){
-						console.debug('done');
-						return done(err || error, photo);
-					});
-				});
-
-				return req;
-			} catch(err){
-				return done(err);
-			}
-
-		};
+    if (!photo) return done(new Error('no photo provided'));
+    if (!photo.path) done(new Error("Path is not set on photo."));
+    if (!user || !user.accounts || !user.accounts.dropbox) return done(new Error('not a dropbox user')); // 'Not a dropbox user'
+    if (photo.owners.indexOf(user._id.toString()) < 0) return done(new Error('owner not found')); // not this users photo
 
 
-		connector.downloadOriginal = function(user, photo, done){
-			if (!done) throw new Error("Callback is mandatory");
 
-			if (!user || !user.accounts || !user.accounts.dropbox)
-				return done(new Error('Not a dropbox user'), null); // not a dropbox user
+    var filename = photo.source + '/' + photo._id;
 
+    try {
+      var client = this.getClient(user);
+      var req = client.thumbnails(photo.path, {
+        size: 'l'
+      }, function() {});
 
-			if (!photo || photo.bytes > 10 * 1024 * 1024) {
-				return done(null, null);
-			}
+      var error;
+      req.on('error', function(err) {
+        error = err;
+      });
 
-			var client = this.getClient(user);
+      req.on('response', function(res) {
+        if (!res || res.statusCode >= 400) {
+          console.log('owners', photo.owners);
+          console.log('error thumbnail'.red, photo.path);
+          return done('Error downloading thumbnail (' + res.statusCode + ', details: ' + res.body + ')');
+        }
 
-			var req = client.stream(photo.path);
-			req.timeout = 100000;
+        console.debug('streaming to s3...');
 
-			var error;
-			
-			req.on('error', function(err){
-				error = err;
-			});
+        connector.upload('thumbnail', photo, res, function(err, photo) {
+          console.debug('done');
+          return done(err || error, photo);
+        });
+      });
 
+      return req;
+    } catch (err) {
+      return done(err);
+    }
 
-			req.on('response', function(res){
-				//res.length = photo.bytes;
-				
-				if(!res || res.statusCode >= 400){
-					console.log('error original'.red, user, photo.path);
-					return done("Error downloading original");
-				}
-
-				connector.upload('original', photo, res, function(err, photo){
-					done(err || error, photo);
-				});
-			});
-
-
-		};
+  };
 
 
-		connector.getClient = function(user){
+  connector.downloadOriginal = function(user, photo, done) {
+    if (!done) throw new Error("Callback is mandatory");
 
-			if (!user || !user.accounts || !user.accounts.dropbox)
-				return;
-			
-			var access_token = {
-				"oauth_token_secret"	:  user.accounts.dropbox.tokenSecret,
-				"oauth_token"					:  user.accounts.dropbox.token,
-			};
+    if (!user || !user.accounts || !user.accounts.dropbox)
+      return done(new Error('Not a dropbox user'), null); // not a dropbox user
 
-			console.debug('auth token ' + JSON.stringify(access_token));
 
-			var client = dropbox.client(access_token);
-			return client;
-		};
+    if (!photo || photo.bytes > 10 * 1024 * 1024) {
+      return done(null, null);
+    }
 
-		connector.importNewPhotos = function(user, options, done)
-		{
+    var client = this.getClient(user);
 
-		  if (!done) throw new Error("Callback is mandatory");
+    var req = client.stream(photo.path);
+    req.timeout = 100000;
 
-			if (!user || !user._id || user.accounts.dropbox === undefined){
-				return done(new Error('Not a valid dropbox user'));
-			}
+    var error;
 
-	    return User.findById(user._id, function(err, user){
-				console.debug('Finding photos on dropbox');
+    req.on('error', function(err) {
+      error = err;
+    });
 
-				if (err || !user || !user.accounts || !user.accounts.dropbox) return done(new Error('error finding user or this user don\'t have dropbox'));
-				
-				var client = connector.getClient(user);
 
-				if (!client) return done(new Error('No client recieved'));
-				
-				console.debug('Created dropbox client');
+    req.on('response', function(res) {
+      //res.length = photo.bytes;
 
-				var loadDelta = function(cursor){
-					console.debug('loading delta #' + cursor + ' for user ' + user);
-					var request = client.delta({cursor : cursor || null}, function(status, reply){
-						console.debug('got response status #' + status);
+      if (!res || res.statusCode >= 400) {
+        console.log('error original'.red, user, photo.path);
+        return done("Error downloading original");
+      }
 
-						if (status !== 200 || !reply)
-							return done && done(status);
+      connector.upload('original', photo, res, function(err, photo) {
+        done(err || error, photo);
+      });
+    });
 
-				    var photos = (reply.entries || []).map(function(photoRow){
 
-							var photo = photoRow[1];
-							if (!photo) return null;
-							photo.mimeType = photo && photo.mime_type;
-							photo.taken = photo && photo.client_mtime;
-							photo.source = 'dropbox';
-							return photo && photo.mime_type && photo.bytes > 100*1024 && photo.bytes < 10*1024*1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
-				    
-				    }).reduce(function(a,b){
+  };
 
-							if (b) {a.push(b)} // remove empty rows
-							return a;
 
-				    }, []);
+  connector.getClient = function(user) {
 
-						user.accounts.dropbox.cursor = reply.cursor;
-						user.markModified('accounts');
-						
-						return user.save(function(err, user){
-							photos.next = reply.cursor;
-							return done && done(err, photos);
-						});
+    if (!user || !user.accounts ||  !user.accounts.dropbox)
+      return;
 
-					});
+    var access_token = {
+      'oauth_token_secret': user.accounts.dropbox.tokenSecret,
+      'oauth_token': user.accounts.dropbox.token,
+    };
 
-				};
+    console.debug('auth token ' + JSON.stringify(access_token));
 
-				return loadDelta(options.next || user.accounts.dropbox.cursor);
-			});
+    var client = dropbox.client(access_token);
+    return client;
+  };
 
-		};
-		return connector;
+  connector.importNewPhotos = function(user, options, done) {
+
+    if (!done) throw new Error('Callback is mandatory');
+
+    if (!user || !user._id || user.accounts.dropbox === undefined) {
+      return done(new Error('Not a valid dropbox user'));
+    }
+
+    return User.findById(user._id, function(err, user) {
+      console.debug('Finding photos on dropbox');
+
+      if (err || !user ||  !user.accounts || !user.accounts.dropbox) return done(new Error('error finding user or this user don\'t have dropbox'));
+
+      var client = connector.getClient(user);
+
+      if (!client) return done(new Error('No client recieved'));
+
+      console.debug('Created dropbox client');
+
+      var loadDelta = function(cursor) {
+        console.debug('loading delta #' + cursor + ' for user ' + user);
+        client.delta({
+          cursor: cursor || null
+        }, function(status, reply) {
+          console.debug('got response status #' + status);
+
+          if (status !== 200 || !reply)
+            return done && done(status);
+
+          var photos = (reply.entries ||  []).map(function(photoRow) {
+
+            var photo = photoRow[1];
+            if (!photo) return null;
+            photo.mimeType = photo && photo.mime_type;
+            photo.taken = photo && photo.client_mtime;
+            photo.source = 'dropbox';
+            return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
+
+          }).reduce(function(a, b) {
+
+            if (b) {
+              a.push(b);
+            } // remove empty rows
+            return a;
+
+          }, []);
+
+          user.accounts.dropbox.cursor = reply.cursor;
+          user.markModified('accounts');
+
+          return user.save(function(err) {
+            photos.next = reply.cursor;
+            return done && done(err, photos);
+          });
+
+        });
+
+      };
+
+      return loadDelta(options.next || user.accounts.dropbox.cursor);
+    });
+
+  };
+  return connector;
 }
 
 module.exports = dropboxJob;
