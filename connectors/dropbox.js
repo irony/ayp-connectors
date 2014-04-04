@@ -133,7 +133,7 @@ function dropboxJob() {
           if (status !== 200 || !reply) {
             // hit request limit, try again
             if (status === 503){
-              if (reply.error) throw new Error(reply.error);
+              if (reply.error) return done(reply.error);
 
               console.debug('error 503, waiting...', reply);
               var retryAfter = reply.headers['Retry-After'] * 1000;
