@@ -149,6 +149,11 @@ function dropboxJob() {
             photo.mimeType = photo && photo.mime_type;
             photo.taken = photo && photo.client_mtime;
             photo.source = 'dropbox';
+
+            client.media(photo.path, function(status, file){
+              photo.store = {original : {src: file.url}};
+            });
+
             return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 
           }).filter(function(a) { return a; });
