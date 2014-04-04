@@ -133,7 +133,9 @@ function dropboxJob() {
           if (status !== 200 || !reply) {
             // hit request limit, try again
             if (status === 503){
-              console.debug('error 503, waiting...', reply.headers);
+              if (reply.error) throw new Error(reply.error);
+
+              console.debug('error 503, waiting...', reply);
               var retryAfter = reply.headers['Retry-After'] * 1000;
               return setTimeout(function(){
                 connector.importNewPhotos(user, options, done);
