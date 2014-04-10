@@ -35,9 +35,16 @@ function dropboxJob() {
 
       req.on('response', function(res) {
         if (!res || res.statusCode >= 400) {
-          console.log('owners', photo.owners);
-          console.log('error thumbnail'.red, photo.path);
-          return done('Error downloading thumbnail (' + res.statusCode + ', details: ' + res.body + ')');
+          if (res.status === 503){
+            console.debug('error 503, waiting...', res);
+            var retryAfter = res.headers && res.headers['Retry-After'] * 1000 || 5000;
+            return setTimeout(function(){
+              connector.downloadThumbnail(user, photo, done);
+            }, retryAfter);
+
+          } else {
+            return done('Error downloading thumbnail (' + res.statusCode + ', details: ' + res.body + ')');
+          }
         }
 
         console.debug('streaming to s3...');
@@ -124,7 +131,7 @@ function dropboxJob() {
       console.debug('Created dropbox client');
 
       var loadDelta = function(cursor) {
-        console.debug('loading delta #' + cursor + ' for user ' + user);
+        console.debug('loading delta #' + cursor + ' for user ' + user.displayName);
         client.delta({
           cursor: cursor || null
         }, function(status, reply) {
@@ -133,15 +140,14 @@ function dropboxJob() {
           if (status !== 200 || !reply) {
             // hit request limit, try again
             if (status === 503){
-              if (reply.error) return done(reply.error);
-
               console.debug('error 503, waiting...', reply);
-              var retryAfter = reply.headers['Retry-After'] * 1000;
+              var retryAfter = reply.headers && reply.headers['Retry-After'] * 1000 || 5000;
               return setTimeout(function(){
                 connector.importNewPhotos(user, options, done);
               }, retryAfter);
+            } else {
+              return done && done(status);
             }
-            return done && done(status);
           }
 
           var photos = (reply.entries ||  []).map(function(photoRow) {
@@ -151,10 +157,6 @@ function dropboxJob() {
             photo.mimeType = photo && photo.mime_type;
             photo.taken = photo && photo.client_mtime;
             photo.source = 'dropbox';
-
-            client.media(photo.path, function(status, file){
-              photo.store = {original : {src: file.url}};
-            });
 
             return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 
