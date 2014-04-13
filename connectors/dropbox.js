@@ -162,6 +162,9 @@ function dropboxJob() {
 
           }).filter(function(a) { return a; });
 
+
+          console.debug('found %d photos from %d entries', photos.length, reply.entries.length);
+
           user.accounts.dropbox.cursor = reply.cursor;
           user.markModified('accounts');
 
