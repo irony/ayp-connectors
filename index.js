@@ -4,8 +4,9 @@ var nconf = require('nconf');
 module.exports = function(){
 
   return {
-    dropbox: require('./connectors/dropbox')(),
-    facebook: require('./connectors/facebook')(),
+    dropbox: require('./input/dropbox')(),
+    facebook: require('./input/facebook')(),
+    base: require('./base/inputConnector'),
     //flickr: require('./connectors/flickr')(),
     //instagram: require('./connectors/instagram')(),
     //twitter: require('./connectors/twitter')()
