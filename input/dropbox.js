@@ -3,6 +3,7 @@ var InputConnector = require('../base/inputConnector');
 var models = require('AllYourPhotosModels');
 var User = models.user;
 var nconf = require('nconf');
+var request = require('request');
 
 function dropboxJob() {
   this.name = 'dropbox';
@@ -114,6 +115,24 @@ function dropboxJob() {
     return client;
   };
 
+  connector.wait = function(user, done){
+    if (!user.accounts || !user.accounts.dropbox.cursor) return done(null, false);
+
+    request.get({
+      url:'https://api-notify.dropbox.com/1/longpoll_delta',
+      timeout: (480+90)*1000, // max timeout plus jitter
+      qs:{
+        cursor: user.accounts.dropbox.cursor,
+        timeout: 480
+      }
+    }, function(err, response, body){
+      if(body.changes) return done(null, true);
+      setTimeout(function(){
+        connector.wait(user, done);
+      }, (body.backoff || 5) * 1000);
+    });
+  };
+
   connector.importNewPhotos = function(user, options, done) {
 
     if (!done) throw new Error('Callback is mandatory');
@@ -169,7 +188,9 @@ function dropboxJob() {
           user.markModified('accounts');
 
           return user.save(function(err) {
-            photos.next = reply.cursor;
+            if (photos.has_more){
+              photos.next = reply.cursor;
+            }
             return done && done(err, photos);
           });
 

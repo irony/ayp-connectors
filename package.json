@@ -34,6 +34,7 @@
     "batch": "~0.5.0",
     "oauth": "*",
     "passport-strategy": "~1.0.0",
-    "readable-stream": "~1.0.26-2"
+    "readable-stream": "~1.0.26-2",
+    "request": "~2.34.0"
   }
 }
