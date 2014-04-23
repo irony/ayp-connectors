@@ -117,17 +117,19 @@ function dropboxJob() {
 
   connector.wait = function(user, done){
     if (!user.accounts || !user.accounts.dropbox.cursor) return done(null, false);
-
     request.get({
       url:'https://api-notify.dropbox.com/1/longpoll_delta',
       timeout: (480+90)*1000, // max timeout plus jitter
+      json: true,
       qs:{
         cursor: user.accounts.dropbox.cursor,
         timeout: 480
       }
     }, function(err, response, body){
+      console.log('wait response', arguments);
       if(body.changes) return done(null, true);
       setTimeout(function(){
+        // start new request until we find changes
         connector.wait(user, done);
       }, (body.backoff || 5) * 1000);
     });
