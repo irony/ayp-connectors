@@ -116,7 +116,7 @@ function dropboxJob() {
   };
 
   connector.wait = function(user, done){
-    if (!user.accounts || !user.accounts.dropbox.cursor) return done(null, false);
+    if (!user.accounts || !user.accounts.dropbox.cursor) return done(null, true, 'dropbox');
     request.get({
       url:'https://api-notify.dropbox.com/1/longpoll_delta',
       timeout: (480+90)*1000, // max timeout plus jitter
@@ -126,7 +126,8 @@ function dropboxJob() {
         timeout: 480
       }
     }, function(err, response, body){
-      console.log('wait response', arguments);
+      if (err) throw err;
+      console.debug('wait response from dropbox', body);
       if(body.changes) return done(null, true);
       setTimeout(function(){
         // start new request until we find changes
