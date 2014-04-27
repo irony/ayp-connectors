@@ -191,9 +191,7 @@ function dropboxJob() {
           user.markModified('accounts');
 
           return user.save(function(err) {
-            if (photos.has_more){
-              photos.next = reply.cursor;
-            }
+            photos.next = reply.cursor;
             return done && done(err, photos);
           });
 
