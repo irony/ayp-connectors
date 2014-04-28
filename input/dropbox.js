@@ -179,7 +179,9 @@ function dropboxJob() {
             photo.mimeType = photo && photo.mime_type;
             photo.taken = photo && photo.client_mtime;
             photo.source = 'dropbox';
-
+            var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
+            photo.store = {thumbnail: {src : req.url, preview:true}};
+            req.abort(); // HACK: do this with signed url instead - look for oauth lib
             return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 
           }).filter(function(a) { return a; });
