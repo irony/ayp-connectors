@@ -126,7 +126,7 @@ function dropboxJob() {
         timeout: 480
       }
     }, function(err, response, body){
-      if (err) throw err;
+      if (err) return done(err);
       console.debug('wait response from dropbox', body);
       if(body.changes) return done(null, true);
       setTimeout(function(){
