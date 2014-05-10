@@ -6,8 +6,8 @@ function InputConnector(name){
   this.name = name;
 }
 
-var ImageHeaders = require("image-headers");
-var Photo = require("AllYourPhotosModels").photo;
+var ImageHeaders = require('image-headers');
+var Photo = require('AllYourPhotosModels').photo;
 
 // Used to request special permissions, right now only facebook
 InputConnector.prototype.scope = {};
@@ -40,20 +40,19 @@ InputConnector.prototype.getClient = function(user){
  * @return {[type]}          [description]
  */
 InputConnector.prototype.upload = function(folder, photo, stream, done){
-  if (!done) throw new Error("Callback is mandatory");
-  if (!photo.mimeType) throw new Error("Mimetype is mandatory");
+  if (!done) throw new Error('Callback is mandatory');
+  if (!photo.mimeType) throw new Error('Mimetype is mandatory');
   if (!stream || !stream.pipe) throw new Error('No stream');
   if (!stream.length && !stream.headers) throw new Error('No stream length or headers available');
 
-  var self = this;
   var error = null;
   var filename = '/' + folder + '/' + photo.source + '/' + photo._id;
   var headers = {
-          'Content-Length': stream.headers && stream.headers['content-length'] || stream.length,
-          'Content-Type': photo.mimeType,
-          'x-amz-acl': 'public-read',
-          'Cache-Control': 'public,max-age=31556926'
-      };
+    'Content-Length': stream.headers && stream.headers['content-length'] || stream.length,
+    'Content-Type': photo.mimeType,
+    //'x-amz-acl': 'public-read',
+    'Cache-Control': 'private,max-age=31556926'
+  };
 
   var put = s3.putStream(stream, filename, headers, function(err, res){
     if (err) return done(err);
@@ -113,9 +112,9 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
         photo.store[folder].height = headers.height;
 
         var now = (new Date()).getTime();
-        console.debug("Downloaded photo " + photo._id + " size:" + bytes / 1000 + " in " + Math.round(bytes / (now-firstTick)) + " kb/s");
+        console.debug('Downloaded photo ' + photo._id + ' size:' + bytes / 1000 + ' in ' + Math.round(bytes / (now-firstTick)) + ' kb/s');
 
-        if (folder === "original" || !photo.ratio){
+        if (folder === 'original' || !photo.ratio){
           photo.ratio = photo.store[folder].ratio;
         }
       }
