@@ -188,7 +188,9 @@ function dropboxJob() {
 
 
           console.debug('found %d photos from %d entries', photos.length, reply.entries.length);
-
+          if (!photos.length){ 
+            console.log('entries', reply.entries)
+          }
           user.accounts.dropbox.cursor = reply.cursor;
           user.markModified('accounts');
 
