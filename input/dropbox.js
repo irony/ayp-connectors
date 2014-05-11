@@ -179,8 +179,8 @@ function dropboxJob() {
             photo.mimeType = photo && photo.mime_type;
             photo.taken = photo && photo.client_mtime;
             photo.source = 'dropbox';
-            var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
-            photo.store = {thumbnail: {url : req.uri.href, preview:true}};
+            var req = client.thumbnails(photo.path, {size: 'm'}, function(){});
+            photo.store = {preview: {url : req.uri.href}};
             req.abort(); // HACK: do this without sending the request instead - look for oauth lib
             return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
 
