@@ -190,11 +190,10 @@ function dropboxJob() {
           console.debug('found %d photos from %d entries', photos.length, reply.entries.length);
           user.accounts.dropbox.cursor = reply.cursor;
           user.markModified('accounts');
+          user.save();
 
-          return user.save(function(err) {
-            photos.next = reply.has_more && reply.cursor || undefined;
-            return done && done(err, photos);
-          });
+          photos.next = reply.has_more && reply.cursor || undefined;
+          return done && done(err, photos);
 
         });
 
