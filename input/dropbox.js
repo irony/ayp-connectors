@@ -157,7 +157,7 @@ function dropboxJob() {
         client.delta({
           cursor: cursor || null
         }, function(status, reply) {
-          console.debug('got response status #' + status);
+          console.debug('got response status #' + status, reply);
 
           if (status !== 200 || !reply) {
             // hit request limit, try again
