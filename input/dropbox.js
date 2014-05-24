@@ -48,7 +48,7 @@ function dropboxJob() {
           }
         }
 
-        console.debug('streaming to s3...');
+//        console.debug('streaming to s3...');
 
         connector.upload('thumbnail', photo, res, function(err, photo) {
           console.debug('done');
@@ -89,7 +89,7 @@ function dropboxJob() {
       //res.length = photo.bytes;
 
       if (!res || res.statusCode >= 400) {
-        console.log('error original'.red, user, photo.path);
+        console.log('error original', res, user, photo.path);
         return done('Error downloading original');
       }
 
