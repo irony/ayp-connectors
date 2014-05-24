@@ -76,8 +76,7 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
 
   put.on('error', function(err){
     error = err;
-    console.log(bytes);
-    console.debug('unhandled exception while sending to S3: '.red, err.toString(), filename);
+    console.debug('unhandled exception while sending to S3: ', err.toString(), filename);
   });
 
   var exifReader = new ImageHeaders();
