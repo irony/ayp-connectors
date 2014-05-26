@@ -29,13 +29,13 @@ function dropboxJob() {
         size: 'l'
       }, function() {});
 
-      var error;
       req.on('error', function(err) {
-        error = err;
+        console.debug('error download thumbnail %s', err);
+        req.abort();
       });
 
       req.on('response', function(res) {
-        if (!res || res.statusCode >= 400) {
+        if (!res || res.statusCode > 200) {
           if (res.status === 503){
             console.debug('error 503, waiting...', res);
             var retryAfter = res.headers && res.headers['Retry-After'] * 1000 || 5000;
@@ -52,7 +52,7 @@ function dropboxJob() {
 
         connector.upload('thumbnail', photo, res, function(err, photo) {
           console.debug('done');
-          return done(err || error, photo);
+          return done(err, photo);
         });
       });
 
@@ -70,6 +70,7 @@ function dropboxJob() {
 
 
     if (!photo || photo.bytes > 10 * 1024 * 1024) {
+      // don't download movieclips yet
       return done(null, null);
     }
 
@@ -79,7 +80,7 @@ function dropboxJob() {
     req.timeout = 100000;
 
     req.on('error', function(err) {
-      done(err);
+      console.debug('error download original %s', err);
       req.abort();
     });
 
@@ -87,7 +88,7 @@ function dropboxJob() {
     req.on('response', function(res) {
       //res.length = photo.bytes;
 
-      if (!res || res.statusCode >= 400) {
+      if (!res || res.statusCode > 200) {
         console.debug('error original code:%s user:%s path:%s', res.statusCode, user.displayName, photo.path);
         return done('Error downloading original');
       }
