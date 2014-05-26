@@ -78,10 +78,9 @@ function dropboxJob() {
     var req = client.stream(photo.path);
     req.timeout = 100000;
 
-    var error;
-
     req.on('error', function(err) {
-      error = err;
+      done(err);
+      req.abort();
     });
 
 
@@ -89,12 +88,12 @@ function dropboxJob() {
       //res.length = photo.bytes;
 
       if (!res || res.statusCode >= 400) {
-        console.log('error original', res, user, photo.path);
+        console.debug('error original code:%s user:%s path:%s', res.statusCode, user.displayName, photo.path);
         return done('Error downloading original');
       }
 
       connector.upload('original', photo, res, function(err, photo) {
-        done(err || error, photo);
+        done(err, photo);
       });
     });
   };
