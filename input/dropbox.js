@@ -99,6 +99,11 @@ function dropboxJob() {
     });
   };
 
+  connector.getOriginalUrl = function(user, photo, done) {
+    var client = this.getClient(user);
+    client.media(photo.path, done);
+  };
+
   connector.getClient = function(user) {
 
     if (!user || !user.accounts ||  !user.accounts.dropbox)
