@@ -48,8 +48,6 @@ function dropboxJob() {
           }
         }
 
-        console.error('streaming to s3...', photo);
-
         connector.upload('thumbnail', photo, res, function(err, photo) {
           console.debug('done');
           return done(err, photo);
