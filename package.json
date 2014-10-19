@@ -2,7 +2,9 @@
   "name": "AllYourPhotosConnectors",
   "version": "0.0.1",
   "description": "ERROR: No README.md file found!",
-  "publishConfig": { "registry": "http://npm.allyourphotos.org/" },
+  "publishConfig": {
+    "registry": "http://npm.allyourphotos.org/"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,26 +17,26 @@
   },
   "dependencies": {
     "AllYourPhotosModels": "irony/ayp-models",
-    "nconf": "*",
+    "async": "*",
+    "batch": "~0.5.0",
+    "dbox": "0.5.5",
+    "image-headers": "~0.3.3",
+    "knox": "^0.9.1",
     "lodash": "*",
     "mongoose": "*",
-    "redis": "*",
-    "async": "*",
-    "passport": "*",
-    "dbox": "0.5.5",
-    "knox": "*",
-    "require-dir": "~0.1.0",
-    "image-headers": "~0.3.3",
-    "passport-instagram": "*",
-    "passport-flickr": "*",
-    "passport-facebook": "*",
-    "passport-twitter": "*",
-    "passport-dropbox": "*",
-    "passport-local": "*",
-    "batch": "~0.5.0",
+    "nconf": "*",
     "oauth": "*",
+    "passport": "*",
+    "passport-dropbox": "*",
+    "passport-facebook": "*",
+    "passport-flickr": "*",
+    "passport-instagram": "*",
+    "passport-local": "*",
     "passport-strategy": "~1.0.0",
+    "passport-twitter": "*",
     "readable-stream": "~1.0.26-2",
-    "request": "~2.34.0"
+    "redis": "*",
+    "request": "~2.34.0",
+    "require-dir": "~0.1.0"
   }
 }

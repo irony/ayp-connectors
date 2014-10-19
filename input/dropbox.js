@@ -48,7 +48,7 @@ function dropboxJob() {
           }
         }
 
-//        console.debug('streaming to s3...');
+        console.error('streaming to s3...', photo);
 
         connector.upload('thumbnail', photo, res, function(err, photo) {
           console.debug('done');
