@@ -1,5 +1,5 @@
 {
-  "name": "AllYourPhotosConnectors",
+  "name": "ayp-connectors",
   "version": "0.0.1",
   "description": "ERROR: No README.md file found!",
   "publishConfig": {
@@ -26,14 +26,6 @@
     "mongoose": "*",
     "nconf": "*",
     "oauth": "*",
-    "passport": "*",
-    "passport-dropbox": "*",
-    "passport-facebook": "*",
-    "passport-flickr": "*",
-    "passport-instagram": "*",
-    "passport-local": "*",
-    "passport-strategy": "~1.0.0",
-    "passport-twitter": "*",
     "readable-stream": "~1.0.26-2",
     "redis": "*",
     "request": "~2.34.0",
