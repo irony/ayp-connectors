@@ -7,7 +7,7 @@ function InputConnector(name){
 }
 
 var ImageHeaders = require('image-headers');
-var Photo = require('AllYourPhotosModels').photo;
+var Photo = require('ayp-models').photo;
 
 // Used to request special permissions, right now only facebook
 InputConnector.prototype.scope = {};

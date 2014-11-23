@@ -1,6 +1,6 @@
 var dbox = require('dbox');
 var InputConnector = require('../base/inputConnector');
-var models = require('AllYourPhotosModels');
+var models = require('ayp-models');
 var User = models.user;
 var nconf = require('nconf');
 var request = require('request');
