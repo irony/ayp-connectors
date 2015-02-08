@@ -2,6 +2,7 @@ var dbox = require('dbox');
 var InputConnector = require('../base/inputConnector');
 var models = require('ayp-models');
 var User = models.user;
+var async = require('async');
 var nconf = require('nconf');
 var request = require('request');
 
@@ -36,13 +37,9 @@ function dropboxJob() {
 
       req.on('response', function(res) {
         if (!res || res.statusCode > 200) {
-          if (res.status === 503){
-            console.debug('error 503, waiting...', res);
+          if (+res.statusCode === 503){
             var retryAfter = res.headers && res.headers['Retry-After'] * 1000 || 5000;
-            return setTimeout(function(){
-              connector.downloadThumbnail(user, photo, done);
-            }, retryAfter);
-
+            return done({ err: res.statusCode, retryAfter: retryAfter });
           } else {
             return done('Error downloading thumbnail (' + res.statusCode + ', details: ' + res.body + ')');
           }
@@ -88,7 +85,8 @@ function dropboxJob() {
 
       if (!res || res.statusCode > 200) {
         console.debug('error original code:%s user:%s path:%s', res.statusCode, user.displayName, photo.path);
-        return done('Error downloading original');
+        var retryAfter = res.headers && res.headers['Retry-After'] * 1000 || 5000;
+        return done({ err: res.statusCode, retryAfter: retryAfter });
       }
 
       connector.upload('original', photo, res, function(err, photo) {
@@ -139,6 +137,23 @@ function dropboxJob() {
     });
   };
 
+  var convertReplyToPhotos = function (reply){
+
+    var photos = (reply.entries ||  []).map(function(photoRow) {
+
+    var photo = photoRow[1];
+    if (!photo) return null;
+    photo.mimeType = photo && photo.mime_type;
+    photo.taken = photo && photo.client_mtime;
+    photo.source = 'dropbox';
+    var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
+    photo.store = {preview: {url : req.uri.href}};
+    req.abort(); // HACK: do this without sending the request instead - look for oauth lib
+    return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
+
+  }).filter(function(a) { return a; });
+  }
+
   connector.importNewPhotos = function(user, options, done) {
 
     if (!done) throw new Error('Callback is mandatory');
@@ -164,30 +179,14 @@ function dropboxJob() {
 
           if (status !== 200 || !reply) {
             // hit request limit, try again
-            if (status === 503){
-              console.debug('error 503, waiting...', reply);
+            if (+status === 503){
               var retryAfter = reply.headers && reply.headers['Retry-After'] * 1000 || 5000;
-              return setTimeout(function(){
-                connector.importNewPhotos(user, options, done);
-              }, retryAfter);
+              return done({err: status, retryAfter:retryAfter});
             } else {
               return done && done(status);
             }
           }
 
-          var photos = (reply.entries ||  []).map(function(photoRow) {
-
-            var photo = photoRow[1];
-            if (!photo) return null;
-            photo.mimeType = photo && photo.mime_type;
-            photo.taken = photo && photo.client_mtime;
-            photo.source = 'dropbox';
-            var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
-            photo.store = {preview: {url : req.uri.href}};
-            req.abort(); // HACK: do this without sending the request instead - look for oauth lib
-            return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
-
-          }).filter(function(a) { return a; });
 
 
           console.debug('found %d photos from %d entries', photos.length, reply.entries.length);
