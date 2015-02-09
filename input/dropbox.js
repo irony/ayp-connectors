@@ -187,7 +187,19 @@ function dropboxJob() {
             }
           }
 
+          var photos = (reply.entries || []).map(function(photoRow) {
 
+            var photo = photoRow[1];
+            if (!photo) return null;
+            photo.mimeType = photo && photo.mime_type;
+            photo.taken = photo && photo.client_mtime;
+            photo.source = 'dropbox';
+            var req = client.thumbnails(photo.path, {size: 'l'}, function(){});
+            photo.store = {preview: {url : req.uri.href}};
+            req.abort(); // HACK: do this without sending the request instead - look for oauth lib
+            return photo && photo.mime_type && photo.bytes > 100 * 1024 && photo.bytes < 10 * 1024 * 1024 && ['image', 'video'].indexOf(photo.mime_type.split('/')[0]) >= 0 ? photo : null;
+
+          }).filter(function(a) { return a; });
 
           console.debug('found %d photos from %d entries', photos.length, reply.entries.length);
           user.accounts.dropbox.cursor = reply.cursor;
