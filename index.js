@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var nconf = require('nconf');
 
 module.exports = function(){

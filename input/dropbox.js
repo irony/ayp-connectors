@@ -2,7 +2,6 @@ var dbox = require('dbox');
 var InputConnector = require('../base/inputConnector');
 var models = require('ayp-models');
 var User = models.user;
-var async = require('async');
 var nconf = require('nconf');
 var request = require('request');
 

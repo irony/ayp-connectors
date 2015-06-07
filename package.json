@@ -14,18 +14,10 @@
   },
   "dependencies": {
     "ayp-models": "*",
-    "async": "*",
-    "batch": "~0.5.0",
     "dbox": "0.5.5",
     "image-headers": "~0.3.3",
     "knox": "^0.9.1",
-    "lodash": "*",
-    "mongoose": "*",
     "nconf": "*",
-    "oauth": "*",
-    "readable-stream": "~1.0.26-2",
-    "redis": "*",
-    "request": "~2.34.0",
-    "require-dir": "~0.1.0"
+    "request": "~2.34.0"
   }
 }
