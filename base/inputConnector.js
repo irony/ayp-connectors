@@ -40,18 +40,26 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
   if (!stream || !stream.pipe) throw new Error('No stream');
   if (!stream.length && !stream.headers) throw new Error('No stream length or headers available');
 
-  photo.filename = ....
+  stream.mimeType = photo.mimeType; // HACK
 
   async.parallell({
     s3: function(next){
-      require('./streamers/s3Streamer')(stream, photo, next);
+      var owner = Object.keys(photo.owners).pop() || 'unknown';
+      var filename = '/' + owner + '/' + folder + '/' + photo._id
+      require('./streamers/s3Streamer')(stream, filename, next);
     },
     exif: function(next){
-      require('./streamers/exifReader')(stream, photo, next);
+      require('./streamers/exifReader')(stream, next);
     }
   }, function(err, result){
     photo.store = photo.store || {};
     photo.store[folder] = photo.store[folder] || {};
+
+    // s3
+    photo.store[folder].url = result.s3.url;
+    photo.store[folder].stored = new Date();
+
+    // exif
     var headers = result.exif.headers;
     if (headers.exif_data) photo.exif = headers.exif_data;
     if (headers.width && headers.height) {
@@ -65,10 +73,7 @@ InputConnector.prototype.upload = function(folder, photo, stream, done){
       }
     }
 
-    photo.store[folder].url = result.s3.url;
-    photo.store[folder].stored = new Date();
     photo.markModified('store');
-
     done(err, photo);
   });
 };

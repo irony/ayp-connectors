@@ -1,16 +1,13 @@
 var ImageHeaders = require('image-headers');
 var exifReader = new ImageHeaders();
-var firstTick;
 
-module.exports = function(stream, photo, done){
+module.exports = function(stream, done){
   stream.on('data', function(chunk){
     try{
       if (!exifReader.finished) exifReader.add_bytes(chunk);
     } catch (err){
       console.log('exif error:'.red, err);
     }
-    var now = (new Date()).getTime();
-    if (!firstTick) firstTick = now;
   });
 
   stream.on('end', function(){
